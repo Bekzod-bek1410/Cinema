@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineFinder AI - Cinema Branch</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --text: #f8fafc;
+            --accent: #fbbf24;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        h1 span {
+            color: var(--primary);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            background: var(--card);
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 10px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin: 25px 0;
+        }
+
+        .cat-btn {
+            background: #334155;
+            color: white;
+            padding: 12px 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .cat-btn:hover {
+            background: var(--primary);
+            color: black;
+            transform: translateY(-2px);
+        }
+
+        .result-area {
+            margin-top: 30px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .movie-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 25px;
+            border: 1px solid #334155;
+            margin-bottom: 20px;
+        }
+
+        .cat-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 10px;
+        }
+
+        .list-item {
+            margin: 10px 0;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+        }
+
+        .list-item span.stars {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .search-fallback {
+            text-align: center;
+            padding: 40px;
+            background: rgba(251, 191, 36, 0.05);
+            border-radius: 16px;
+            border: 1px dashed var(--accent);
+        }
+
+        .label {
+            color: #94a3b8;
+            font-weight: bold;
+        }
+
+        .movie-name {
+            color: var(--primary);
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🎥 CineFinder <span>AI</span></h1>
+            <p>Cinema Branch: Aqlli qidiruv va Saralash</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="movieInput" placeholder="Kino, janr yoki kategoriya yozing...">
+            <button onclick="handleSearch()">Qidirish</button>
+        </div>
+
+        <div class="category-grid">
+            <div class="cat-btn" onclick="showCategory('jahon')">🌍 Jahon Top 20</div>
+            <div class="cat-btn" onclick="showCategory('uzbek')">🇺🇿 O'zbek Top 20</div>
+            <div class="cat-btn" onclick="showCategory('fantastika')">🚀 Fantastika</div>
+            <div class="cat-btn" onclick="showCategory('komediya')">😂 Komediya</div>
+            <div class="cat-btn" onclick="showCategory('drama')">🎭 Drama</div>
+            <div class="cat-btn" onclick="showCategory('multfilm')">🦁 Multfilm</div>
+        </div>
+
+        <div id="displayArea" class="result-area"></div>
+    </div>
+
+    <script>
+        const database = {
+            movies: [
+                { name: "The Shawshank Redemption", imdb: 9.3, genre: "Drama" },
+                { name: "The Godfather", imdb: 9.2, genre: "Crime, Drama" },
+                { name: "Schindler's List", imdb: 9.0, genre: "Biography, Drama" },
+                { name: "Pulp Fiction", imdb: 8.9, genre: "Crime" },
+                { name: "Inception", imdb: 8.8, genre: "Action, Sci-Fi" },
+                { name: "Interstellar", imdb: 8.7, genre: "Adventure, Sci-Fi" },
+                { name: "The Dark Knight", imdb: 9.0, genre: "Action, Crime" },
+                { name: "Forrest Gump", imdb: 8.8, genre: "Drama, Romance" },
+                { name: "The Matrix", imdb: 8.7, genre: "Action, Sci-Fi" },
+                { name: "Parasite", imdb: 8.5, genre: "Drama, Thriller" },
+                { name: "Se7en", imdb: 8.6, genre: "Crime, Thriller" },
+                { name: "Titanic", imdb: 7.9, genre: "Drama, Romance" },
+                { name: "Intouchables", imdb: 8.5, genre: "Biography, Comedy, Drama" },
+                { name: "The Lion King", imdb: 8.5, genre: "Animation, Adventure" },
+                { name: "Spirited Away", imdb: 8.6, genre: "Animation, Adventure" },
+                { name: "Coco", imdb: 8.4, genre: "Animation, Adventure" },
+                { name: "Joker", imdb: 8.4, genre: "Crime, Drama" },
+                { name: "The Silence of the Lambs", imdb: 8.6, genre: "Crime, Thriller" },
+                { name: "The Green Mile", imdb: 8.6, genre: "Crime, Drama" },
+                { name: "Gladiator", imdb: 8.5, genre: "Action, Drama" },
+                // Uzbek Movies
+                { name: "Mahallada duv-duv gap", imdb: 8.2, genre: "Komediya" },
+                { name: "O'tkan kunlar", imdb: 8.5, genre: "Drama, Tarixiy" },
+                { name: "Shum bola", imdb: 8.4, genre: "Sarguzasht, Komediya" },
+                { name: "Suyunchi", imdb: 8.1, genre: "Drama, Komediya" },
+                { name: "Kelinlar qo'zg'oloni", imdb: 8.3, genre: "Komediya" },
+                { name: "Abdullajon", imdb: 8.4, genre: "Fantastika, Komediya" },
+                { name: "To'ylar muborak", imdb: 7.9, genre: "Komediya" },
+                { name: "Temir xotin", imdb: 8.3, genre: "Fantastika, Komediya" },
+                { name: "Osmondagi bolalar", imdb: 8.2, genre: "Yoshlar dramasi" },
+                { name: "Vatan", imdb: 8.7, genre: "Drama, Urush" },
+                { name: "Ilhaq", imdb: 9.1, genre: "Urush dramasi" },
+                { name: "Baron", imdb: 8.2, genre: "Kriminal, Triller" },
+                { name: "Avatar", imdb: 7.9, genre: "Action, Sci-Fi" },
+                { name: "Toy Story", imdb: 8.3, genre: "Animation" },
+                { name: "Up", imdb: 8.3, genre: "Animation" }
+            ],
+            categories: {
+                jahon: {
+                    title: "Jahon Top 20",
+                    list: ["The Shawshank Redemption", "The Godfather", "Schindler's List", "Pulp Fiction", "Inception", "Interstellar", "The Dark Knight", "Forrest Gump", "The Matrix", "Parasite", "Se7en", "The Silence of the Lambs", "The Green Mile", "Gladiator", "Saving Private Ryan", "The Lion King", "Spirited Away", "Coco", "Joker", "Hamilton"]
+                },
+                uzbek: {
+                    title: "O'zbek Top 20",
+                    list: ["Mahallada duv-duv gap", "O'tkan kunlar", "Shum bola", "Suyunchi", "Kelinlar qo'zg'oloni", "Abdullajon", "To'ylar muborak", "Maftuningman", "Temir xotin", "Osmondagi bolalar", "Vatan", "Kichkina tabib", "Ilhaq", "Baron", "Scorpion", "Parizod", "2000 qo'shiq", "Is'hoqxon Ibrat", "Ayol qadri", "Chashma"]
+                },
+                fantastika: {
+                    title: "Fantastika",
+                    list: ["Inception", "Interstellar", "The Matrix", "Avatar", "Abdullajon", "Temir xotin", "Scorpion"]
+                },
+                komediya: {
+                    title: "Komediya",
+                    list: ["Mahallada duv-duv gap", "Shum bola", "Kelinlar qo'zg'oloni", "Forrest Gump", "Toy Story"]
+                },
+                drama: {
+                    title: "Drama",
+                    list: ["O'tkan kunlar", "Schindler's List", "Ilhaq", "Vatan", "The Shawshank Redemption", "The Green Mile"]
+                },
+                multfilm: {
+                    title: "Multfilm",
+                    list: ["The Lion King", "Coco", "Wall-E", "Up", "Kichkina tabib"]
+                }
+            }
+        };
+
+        function showCategory(id) {
+            const cat = database.categories[id];
+            const area = document.getElementById('displayArea');
+            area.innerHTML = `
+            <div class="movie-card">
+                <div class="cat-title">📌 [${cat.title}] bo'yicha eng sara filmlar:</div>
+                <div id="listContent"></div>
+            </div>
+        `;
+
+            const content = document.getElementById('listContent');
+            cat.list.forEach((name, index) => {
+                const movie = database.movies.find(m => m.name.toLowerCase() === name.toLowerCase());
+                const rating = movie ? movie.imdb : "N/A";
+                const row = document.createElement('div');
+                row.className = 'list-item';
+                row.innerHTML = `
+                <span>${index + 1}. ${name}</span>
+                <span class="stars">⭐ ${rating}</span>
+            `;
+                content.appendChild(row);
+            });
+            area.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Fuzzy search utilities
+        function getSimilarity(s1, s2) {
+            let longer = s1.toLowerCase();
+            let shorter = s2.toLowerCase();
+            if (s1.length < s2.length) {
+                longer = s2.toLowerCase();
+                shorter = s1.toLowerCase();
+            }
+            let longerLength = longer.length;
+            if (longerLength === 0) return 1.0;
+            return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+        }
+
+        function editDistance(s1, s2) {
+            let costs = [];
+            for (let i = 0; i <= s1.length; i++) {
+                let lastValue = i;
+                for (let j = 0; j <= s2.length; j++) {
+                    if (i == 0) costs[j] = j;
+                    else {
+                        if (j > 0) {
+                            let newValue = costs[j - 1];
+                            if (s1.charAt(i - 1) != s2.charAt(j - 1))
+                                newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                            costs[j - 1] = lastValue;
+                            lastValue = newValue;
+                        }
+                    }
+                }
+                if (i > 0) costs[s2.length] = lastValue;
+            }
+            return costs[s2.length];
+        }
+
+        function handleSearch() {
+            const input = document.getElementById('movieInput').value.toLowerCase().trim();
+            if (!input) return;
+
+            const area = document.getElementById('displayArea');
+
+            // 1. Check if input is too short or unclear
+            if (input.length < 3) {
+                const randomOptions = database.movies.sort(() => 0.5 - Math.random()).slice(0, 3).map(m => m.name).join(", ");
+                area.innerHTML = `
+                <div class="movie-card" style="border: 1px solid #ef4444;">
+                    <p>⚠️ Kechirasiz, aynan qaysi kinoni nazarda tutdingiz? So'rov juda qisqa.</p>
+                    <p>Balki mana bularning biridir: <strong>${randomOptions}</strong></p>
+                </div>
+            `;
+                return;
+            }
+
+            // 2. Check if input is a category name
+            for (let key in database.categories) {
+                if (database.categories[key].title.toLowerCase().includes(input)) {
+                    showCategory(key);
+                    return;
+                }
+            }
+
+            // 3. Check for exact or partial match in DB
+            let movie = database.movies.find(m => m.name.toLowerCase().includes(input));
+
+            // 4. Fuzzy search if no direct match (80% similarity threshold)
+            if (!movie) {
+                let bestMatch = null;
+                let highestScore = 0;
+
+                database.movies.forEach(m => {
+                    const score = getSimilarity(input, m.name);
+                    if (score > highestScore) {
+                        highestScore = score;
+                        bestMatch = m;
+                    }
+                });
+
+                if (highestScore >= 0.8) {
+                    area.innerHTML = `
+                    <div class="movie-card" style="border-left: 5px solid var(--primary);">
+                        <p style="color: var(--primary); font-weight: bold; margin-bottom: 15px;">Siz '${bestMatch.name}' kinosini qidirgan bo'lsangiz kerak. Mana u haqida ma'lumot:</p>
+                        <div class="movie-name">🎥 ${bestMatch.name}</div>
+                        <div class="info-row"><span class="label">⭐ IMDb:</span> ${bestMatch.imdb}/10</div>
+                        <div class="info-row"><span class="label">🎭 Janr:</span> ${bestMatch.genre}</div>
+                    </div>
+                `;
+                    area.scrollIntoView({ behavior: 'smooth' });
+                    return;
+                }
+            }
+
+            if (movie) {
+                area.innerHTML = `
+                <div class="movie-card">
+                    <div class="movie-name">🎥 ${movie.name}</div>
+                    <div class="info-row"><span class="label">⭐ IMDb:</span> ${movie.imdb}/10</div>
+                    <div class="info-row"><span class="label">🎭 Janr:</span> ${movie.genre}</div>
+                    <p style="margin-top:15px; font-style:italic; color:#94a3b8;">Bazada mavjud ma'lumot.</p>
+                </div>
+            `;
+                area.scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+
+            // 5. Fallback: No match and no fuzzy match
+            area.innerHTML = `
+            <div class="search-fallback">
+                <h3 style="color:var(--accent);">🔍 Qidiruv natijasi</h3>
+                <p>"${input}" kinosi ichki bazada topilmadi.</p>
+                <p>Balki nomini xato yozgandirsiz? Yoki bizda hali bu kino yo'q.</p>
+                <button onclick="simulateWebSearch('${input}')" style="margin-top:20px; background:var(--accent);">Global bazadan qidirish</button>
+            </div>
+        `;
+        }
+
+        function simulateWebSearch(term) {
+            alert(`${term} uchun internetdan ma'lumot qidirilmoqda. (Bu MVP versiyasida simulyatsiya qilinadi).`);
+        }
+    </script>
+
+</body>
+
+</html>
