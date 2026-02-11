@@ -7,15 +7,23 @@
     <title>CineFinder AI - Cinema Branch</title>
     <style>
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
+            --bg: #030712;
+            --card: #111827;
+            --card-hover: #1f2937;
             --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.4);
             --text: #f8fafc;
             --accent: #fbbf24;
+            --heart: #ef4444;
+            --success: #22c55e;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -23,10 +31,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
         }
 
@@ -36,21 +45,38 @@
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 3rem;
             margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
         h1 span {
             color: var(--primary);
+            text-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
         }
 
         .search-box {
+            position: relative;
+            flex: 1;
             display: flex;
-            gap: 10px;
+            align-items: center;
             background: var(--card);
-            padding: 10px;
-            border-radius: 12px;
-            border: 1px solid #334155;
+            padding: 5px 20px;
+            border-radius: 16px;
+            border: 1px solid #374151;
+            transition: 0.3s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
         }
 
         input {
@@ -58,56 +84,118 @@
             background: transparent;
             border: none;
             color: white;
-            padding: 10px;
-            font-size: 16px;
+            padding: 12px 0;
+            font-size: 17px;
             outline: none;
+            height: 45px;
         }
 
-        button {
-            background: var(--primary);
-            color: #000;
+        .mic-btn {
+            background: transparent;
             border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 20px;
+            transition: 0.2s;
+        }
+
+        .mic-btn:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .main-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-btn,
+        .lucky-btn {
+            border: none;
+            padding: 0 25px;
+            border-radius: 14px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .search-btn {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .lucky-btn {
+            background: #374151;
+            color: white;
+        }
+
+        .lucky-btn:hover {
+            background: var(--accent);
+            color: #000;
         }
 
         .category-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 10px;
+            gap: 12px;
             margin: 25px 0;
         }
 
         .cat-btn {
-            background: #334155;
-            color: white;
-            padding: 12px 10px;
-            border-radius: 12px;
+            background: #1f2937;
+            color: #94a3b8;
+            padding: 15px 10px;
+            border-radius: 14px;
             text-align: center;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.3s;
             border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .cat-btn i {
+            font-size: 1.5rem;
         }
 
         .cat-btn:hover {
+            background: var(--card-hover);
+            color: white;
+        }
+
+        .cat-btn.active {
             background: var(--primary);
-            color: black;
-            transform: translateY(-2px);
+            color: #000;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
         }
 
-        .result-area {
-            margin-top: 30px;
-            animation: fadeIn 0.3s ease;
+        .movie-card {
+            background: var(--card);
+            border-radius: 20px;
+            padding: 0;
+            border: 1px solid #374151;
+            margin-bottom: 25px;
+            display: flex;
+            overflow: hidden;
+            animation: slideUp 0.4s ease-out;
+            position: relative;
         }
 
-        @keyframes fadeIn {
+        @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(30px);
             }
 
             to {
@@ -116,54 +204,253 @@
             }
         }
 
-        .movie-card {
-            background: var(--card);
-            border-radius: 16px;
-            padding: 25px;
-            border: 1px solid #334155;
-            margin-bottom: 20px;
+        .movie-poster {
+            width: 220px;
+            min-width: 220px;
+            height: auto;
+            min-height: 330px;
+            object-fit: cover;
+            object-position: center 20%;
+            background-color: #1f2937;
+            display: block;
         }
 
-        .cat-title {
-            color: var(--primary);
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 10px;
-        }
-
-        .list-item {
-            margin: 10px 0;
-            font-size: 16px;
+        .movie-content {
+            padding: 30px;
+            flex: 1;
             display: flex;
-            justify-content: space-between;
-            padding: 8px 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 8px;
+            flex-direction: column;
         }
 
-        .list-item span.stars {
-            color: var(--accent);
-            font-weight: bold;
+        .fav-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 18px;
         }
 
-        .search-fallback {
-            text-align: center;
-            padding: 40px;
-            background: rgba(251, 191, 36, 0.05);
-            border-radius: 16px;
-            border: 1px dashed var(--accent);
-        }
-
-        .label {
-            color: #94a3b8;
-            font-weight: bold;
+        .fav-btn:hover {
+            background: var(--heart);
+            transform: scale(1.1);
         }
 
         .movie-name {
-            color: var(--primary);
-            font-size: 1.4rem;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .movie-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .badge {
+            background: #374151;
+            padding: 3px 10px;
+            border-radius: 6px;
+            color: var(--text);
+        }
+
+        .badge-rating {
+            background: var(--accent);
+            color: black;
+            font-weight: bold;
+        }
+
+        .badge-dub {
+            background: var(--success);
+            color: white;
+        }
+
+        .movie-summary {
+            margin-top: 10px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            font-size: 1rem;
+            flex: 1;
+        }
+
+        .watch-btn {
+            margin-top: 25px;
+            background: var(--primary);
+            color: #000;
+            text-decoration: none;
+            padding: 14px 30px;
+            border-radius: 14px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .watch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--primary-glow);
+            filter: brightness(1.1);
+        }
+
+        .list-item {
+            padding: 15px 20px;
             margin-bottom: 10px;
+            background: #1f2937;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .list-item:hover {
+            background: var(--card-hover);
+            transform: translateX(8px);
+        }
+
+        .placeholder-anim {
+            animation: fadeText 3s infinite;
+        }
+
+        @keyframes fadeText {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            header p {
+                font-size: 0.9rem;
+            }
+
+            .search-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .main-btns {
+                display: flex;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .search-btn,
+            .lucky-btn {
+                flex: 1;
+                height: 55px;
+                font-size: 16px;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+                gap: 10px;
+            }
+
+            .cat-btn {
+                padding: 12px 5px;
+                font-size: 13px;
+            }
+
+            .movie-card {
+                flex-direction: column;
+            }
+
+            .movie-poster {
+                width: 100%;
+                height: 450px;
+                min-width: unset;
+                min-height: unset;
+                object-position: center 20%;
+            }
+
+            .movie-content {
+                padding: 2.5rem;
+            }
+
+            .movie-name {
+                font-size: 2rem;
+            }
+
+            .movie-meta {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .cat-btn {
+                padding: 10px 5px;
+                font-size: 12px;
+            }
+
+            .main-btns {
+                display: flex;
+                width: 100%;
+                gap: 10px;
+            }
+
+            .search-btn,
+            .lucky-btn {
+                flex: 1;
+                width: unset;
+                height: 45px;
+            }
+
+            .movie-poster {
+                height: 350px;
+            }
+
+            .movie-content {
+                padding: 1.5rem;
+            }
+
+            .watch-btn {
+                width: 100%;
+                padding: 14px;
+                font-size: 16px;
+                margin-top: 15px;
+            }
+
+            .movie-name {
+                font-size: 1.6rem;
+            }
         }
     </style>
 </head>
@@ -172,22 +459,28 @@
 
     <div class="container">
         <header>
-            <h1>🎥 CineFinder <span>AI</span></h1>
-            <p>Cinema Branch: Aqlli qidiruv va Saralash</p>
+            <h1>� CineFinder <span>AI</span></h1>
+            <p style="color: #94a3b8;">Aqlli kino yordamchisi va Interaktiv interfeys</p>
         </header>
 
-        <div class="search-box">
-            <input type="text" id="movieInput" placeholder="Kino, janr yoki kategoriya yozing...">
-            <button onclick="handleSearch()">Qidirish</button>
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="movieInput" placeholder="Masalan: Interstellar">
+                <button class="mic-btn" onclick="startVoiceSearch()" title="Ovozli qidiruv">🎤</button>
+            </div>
+            <div class="main-btns">
+                <button class="search-btn" onclick="handleSearch()">Qidirish</button>
+                <button class="lucky-btn" onclick="luckyPick()" title="Menga omad kulib boqadi">🎲 Lucky</button>
+            </div>
         </div>
 
-        <div class="category-grid">
-            <div class="cat-btn" onclick="showCategory('jahon')">🌍 Jahon Top 20</div>
-            <div class="cat-btn" onclick="showCategory('uzbek')">🇺🇿 O'zbek Top 20</div>
-            <div class="cat-btn" onclick="showCategory('fantastika')">🚀 Fantastika</div>
-            <div class="cat-btn" onclick="showCategory('komediya')">😂 Komediya</div>
-            <div class="cat-btn" onclick="showCategory('drama')">🎭 Drama</div>
-            <div class="cat-btn" onclick="showCategory('multfilm')">🦁 Multfilm</div>
+        <div class="category-grid" id="catGrid">
+            <div class="cat-btn" onclick="showCategory('jahon', this)"><i>🌍</i><span>Jahon Top 20</span></div>
+            <div class="cat-btn" onclick="showCategory('uzbek', this)"><i>🇺🇿</i><span>O'zbek Top 20</span></div>
+            <div class="cat-btn" onclick="showCategory('fantastika', this)"><i>🚀</i><span>Fantastika</span></div>
+            <div class="cat-btn" onclick="showCategory('komediya', this)"><i>😂</i><span>Komediya</span></div>
+            <div class="cat-btn" onclick="showCategory('drama', this)"><i>🎭</i><span>Drama</span></div>
+            <div class="cat-btn" onclick="showCategory('multfilm', this)"><i>🦁</i><span>Multfilm</span></div>
         </div>
 
         <div id="displayArea" class="result-area"></div>
@@ -196,104 +489,196 @@
     <script>
         const database = {
             movies: [
-                { name: "The Shawshank Redemption", imdb: 9.3, genre: "Drama" },
-                { name: "The Godfather", imdb: 9.2, genre: "Crime, Drama" },
-                { name: "Schindler's List", imdb: 9.0, genre: "Biography, Drama" },
-                { name: "Pulp Fiction", imdb: 8.9, genre: "Crime" },
-                { name: "Inception", imdb: 8.8, genre: "Action, Sci-Fi" },
-                { name: "Interstellar", imdb: 8.7, genre: "Adventure, Sci-Fi" },
-                { name: "The Dark Knight", imdb: 9.0, genre: "Action, Crime" },
-                { name: "Forrest Gump", imdb: 8.8, genre: "Drama, Romance" },
-                { name: "The Matrix", imdb: 8.7, genre: "Action, Sci-Fi" },
-                { name: "Parasite", imdb: 8.5, genre: "Drama, Thriller" },
-                { name: "Se7en", imdb: 8.6, genre: "Crime, Thriller" },
-                { name: "Titanic", imdb: 7.9, genre: "Drama, Romance" },
-                { name: "Intouchables", imdb: 8.5, genre: "Biography, Comedy, Drama" },
-                { name: "The Lion King", imdb: 8.5, genre: "Animation, Adventure" },
-                { name: "Spirited Away", imdb: 8.6, genre: "Animation, Adventure" },
-                { name: "Coco", imdb: 8.4, genre: "Animation, Adventure" },
-                { name: "Joker", imdb: 8.4, genre: "Crime, Drama" },
-                { name: "The Silence of the Lambs", imdb: 8.6, genre: "Crime, Thriller" },
-                { name: "The Green Mile", imdb: 8.6, genre: "Crime, Drama" },
-                { name: "Gladiator", imdb: 8.5, genre: "Action, Drama" },
-                // Uzbek Movies
-                { name: "Mahallada duv-duv gap", imdb: 8.2, genre: "Komediya" },
-                { name: "O'tkan kunlar", imdb: 8.5, genre: "Drama, Tarixiy" },
-                { name: "Shum bola", imdb: 8.4, genre: "Sarguzasht, Komediya" },
-                { name: "Suyunchi", imdb: 8.1, genre: "Drama, Komediya" },
-                { name: "Kelinlar qo'zg'oloni", imdb: 8.3, genre: "Komediya" },
-                { name: "Abdullajon", imdb: 8.4, genre: "Fantastika, Komediya" },
-                { name: "To'ylar muborak", imdb: 7.9, genre: "Komediya" },
-                { name: "Temir xotin", imdb: 8.3, genre: "Fantastika, Komediya" },
-                { name: "Osmondagi bolalar", imdb: 8.2, genre: "Yoshlar dramasi" },
-                { name: "Vatan", imdb: 8.7, genre: "Drama, Urush" },
-                { name: "Ilhaq", imdb: 9.1, genre: "Urush dramasi" },
-                { name: "Baron", imdb: 8.2, genre: "Kriminal, Triller" },
-                { name: "Avatar", imdb: 7.9, genre: "Action, Sci-Fi" },
-                { name: "Toy Story", imdb: 8.3, genre: "Animation" },
-                { name: "Up", imdb: 8.3, genre: "Animation" }
+                { name: "The Shawshank Redemption", year: 1994, duration: "2h 22min", imdb: 9.3, genre: "Drama", dubbing: true, summary: "Adolatsiz ravishda umrbod qamoq jazosiga hukm qilingan bankir Endi Dufreynning matonati haqidagi hikoya. U qamoqxona devorlari orasida ham o'z insoniyligini yo'qotmaydi va do'stlikning qadrini anglatadi. Oradan o'n yillar o'tsa-da, uning ozodlikka bo'lgan umidi so'nmaydi va u hayratlanarli rejasini amalga oshiradi.", poster: "https://image.tmdb.org/t/p/w500/zgyRWri2luavFepRC2vHwYQcT0t.jpg" },
+                { name: "The Godfather", year: 1972, duration: "2h 55min", imdb: 9.2, genre: "Crime, Drama", dubbing: true, summary: "Nyu-Yorkdagi eng qudratli mafiya oilalaridan birining yetakchisi Don Vito Korleone va uning sulolasi haqidagi epik drama. Oilaviy an'analar, sadoqat va xiyonat o'rtasidagi murakkab munosabatlar ustalik bilan tasvirlangan. Maykl Korleonening otasidan so'ng rahnamolikni qo'lga olishi va shafqatsiz olamga kirib borishi ko'rsatiladi.", poster: "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg" },
+                { name: "The Dark Knight", year: 2008, duration: "2h 32min", imdb: 9.0, genre: "Action, Crime", dubbing: true, summary: "Gotem shahrining himoyachisi Betmen o'zining eng ashaddiy raqibi — tartibsizlik va vayronagarchilik ramzi bo'lgan Joker bilan to'qnash keladi. Bu kurash shunchaki jismoniy emas, balki axloqiy va ruhiy sinovga aylanadi. Shahar aholisining taqdiri bir insonning jasorati va tanloviga bog'liq bo'lib qoladi.", poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" },
+                { name: "Inception", year: 2010, duration: "2h 28min", imdb: 8.8, genre: "Action, Sci-Fi", dubbing: true, summary: "Inson ongi va tushlar olamiga sayohat qiluvchi mutaxassislar guruhi haqidagi intellektual jangari film. Ular tushlar ichida tush ko'rish orqali eng maxfiy ma'lumotlarni o'g'irlashadi yoki ongga yangi g'oyalarni joylashadi. Film haqiqat va xayol o'rtasidagi chegarani yo'qotadi va sizni so'nggi daqiqagacha hayratda qoldiradi.", poster: "https://image.tmdb.org/t/p/w500/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" },
+                { name: "Interstellar", year: 2014, duration: "2h 49min", imdb: 8.7, genre: "Adventure, Sci-Fi", dubbing: true, summary: "Yer sayyorasi halokat yoqasida turganda, bir guruh fazogirlar insoniyat uchun yangi uy topish maqsadida koinotga yo'l olishadi. Ular qora tuynuklar va vaqt kengayishi kabi murakkab hodisalarga duch kela turib, oila va muhabbatning kuchini his qilishadi. Koinotning eng sirlari va inson idroki yetmas masofalar go'zal tasvirlangan.", poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" },
+                { name: "Titanic", year: 1997, duration: "3h 14min", imdb: 7.9, genre: "Drama, Romance", dubbing: true, summary: "Hashamatli 'Titanik' kemasining birinchi va so'nggi safari davomida paydo bo'lgan o'lmas sevgi hikoyasi. Turli ijtimoiy tabaqalarga mansub Jek va Rouz fojiali hodisalar markazida qolishadi. Ularning qisqa, ammo mazmunli tuyg'ulari insoniyat tarixidagi eng katta kema halokati fonida namoyish etiladi.", poster: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg" },
+                { name: "Intouchables", year: 1911, duration: "1h 52min", imdb: 8.5, genre: "Biography, Comedy", dubbing: true, summary: "Baxtsiz hodisa tufayli falaj bo'lib qolgan boy aristokrat va uni parvarish qilish uchun yollangan quvnoq yigit o'rtasidagi hayratlanarli do'stlik. Ular bir-birlariga hayot mashaqqatlarini yengishda va har bir ondan zavq olishda yordam berishadi. Film haqiqiy voqeaga asoslangan bo'lib, hayotsevarlik va samimiylik bilan sug'orilgan.", poster: "https://image.tmdb.org/t/p/w500/1QU7HKgsQbGpzsJbJK4pAVQV9F5.jpg" },
+                { name: "Shum bola", year: 1977, duration: "1h 30min", imdb: 8.4, genre: "Sarguzasht, Komediya", dubbing: true, summary: "G'afur G'ulomning mashhur asari asosida suratga olingan o'zbek kinosining durdonasi. Uylari orasidan chiqib ketgan va Toshkent ko'chalarida boylarning qo'lida ishlagan sho'x bolaning sarguzashtlari. Uning o'tkir zehni va har qanday vaziyatdan kulgi bilan chiqib ketishi sizga unutilmas onlarni tuhfa etadi.", poster: "https://image.tmdb.org/t/p/w500/sooJLXgLreKv5f0XNBA2e49O3Hj.jpg" },
+                { name: "Abdullajon", year: 1991, duration: "1h 25min", imdb: 8.4, genre: "Fantastika, Komediya", dubbing: true, summary: "O'zbek qishlog'idan biriga tasodifan tushib qolgan o'zga sayyoralik bola haqidagi afsonaviy komediya. Qishloq oqsoqoli Bozorbay uni o'zi bilan olib keladi va Abdullajon deb ism beradi. Bolaning g'aroyib qobiliyatlari butun qishloq hayotini butkul o'zgartirib yuboradi va sizni ba'zan kuldirib, ba'zan o'ylantiradi.", poster: "https://i.ytimg.com/vi/qUq9Q2U6_1c/hqdefault.jpg" },
+                { name: "O'tkan kunlar", year: 1969, duration: "2h 10min", imdb: 8.5, genre: "Drama, Tarixiy", dubbing: true, summary: "Abdulla Qodiriyning o'lmas asari asosida yaratilgan o'zbek kinosining eng yorqin namunasi. Otabek va Kumushning pokiza tuyg'ulari o'sha davrning og'ir ijtimoiy sharoitlari va intrigalari orasida namoyon bo'ladi. Bu hikoya sadoqat, sevgi va fojia haqida hikoya qilib, har bir tomoshabinning qalbini larzaga soladi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Avatar", year: 2009, duration: "2h 42min", imdb: 7.9, genre: "Action, Sci-Fi", dubbing: true, summary: "Pandora deb nomlangan g'aroyib dunyoda insoniyat va mahalliy Na'vi xalqi o'rtasidagi to'qnashuv haqidagi vizual durdona. Sobiq dengiz piyoda askari yangi dunyoni o'rganish uchun o'zining avataridan foydalanadi va u yerda o'zining haqiqiy maqsadini topadi. Tabiat bilan uyg'unlik va insoniy ochko'zlik o'rtasidagi kurash go'zal tasvirlangan.", poster: "https://image.tmdb.org/t/p/w500/gKY6q7SjCkAU6FqvqWybDYgUKIF.jpg" },
+                { name: "Gladiator", year: 2000, duration: "2h 35min", imdb: 8.5, genre: "Action, Drama", dubbing: true, summary: "Rimning buyuk generali Maksimus xiyonat qurboniga aylanadi va uning butun oilasi yo'q qilinadi. U qulga aylanib, gladiator maydonlarida omon qolish uchun kurashadi va o'z o'chini olishga ahd qiladi. Jasorat va sadoqat ramzi bo'lgan bu qahramon butun imperiyani o'ziga qaratadi.", poster: "https://image.tmdb.org/t/p/w500/ty8TGRuvJLPUmAR1H1nRIsgwvim.jpg" },
+                { name: "Mahallada duv-duv gap", year: 1960, duration: "1h 20min", imdb: 8.2, genre: "Komediya", dubbing: true, summary: "Toshkent mahallalaridan birida yashovchi qo'shnilarning kundalik hayoti, orzu-havaslari va o'zaro hazil-mutoyibalari haqidagi unutilmas film. Farzandlarini uylantirish va turmushga berish harakatidagi ota-onalarning sarguzashtlari kulgu orqali mohirona tasvirlangan. Bu film o'zbek xalqining mehmondo'stligi va mahalla an'analarini go'zal tarzda ochib beradi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Ilhaq", year: 2020, duration: "2h 15min", imdb: 9.1, genre: "Urush dramasi", dubbing: true, summary: "Ikkinchi jahon urushi davrida besh o'g'lini frontga kuzatgan va ularning qaytishini intizorlik bilan kutgan Zulfiya opa Zokirovaning fojiali va matonatli taqdiri. Ona mehri va sabrining cheksizligi kishini hayratga soladi. Bu film millionlab insonlar hayotini o'zgartirgan dahshatli urushning o'zbek oilalariga ko'rsatgan ta'sirini ta'sirli tasvirlaydi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Vatan", year: 2006, duration: "2h 00min", imdb: 8.7, genre: "Drama, Urush", dubbing: true, summary: "Inson taqdiri, vatanparvarlik va o'tmish xotiralari uyg'unlashgan chuqur falsafiy drama. Urush yillarida asirlikda bo'lgan va keyinchalik o'zga yurtlarda qolib ketgan insonning tug'ilgan tuproqqa intilishi va sog'inchi hikoya qilinadi. Vatan tuyg'usi har qanday masofa va vaqtdan ustun ekanligi filmning asosiy mazmunini tashkil etadi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Pulp Fiction", year: 1994, duration: "2h 34min", imdb: 8.9, genre: "Crime", dubbing: true, summary: "Los-Anjelesdagi jinoyatchilar olamidan bir necha qismli, o'zaro bog'langan va o'ziga xos uslubdagi hikoyalar. Kventin Tarantinoning betakror rejissyorlik ishi bo'lgan bu film dialoglar boyligi va kutilmagan voqealarga boyligi bilan ajralib turadi. Professional qotillar, bokschi va mafiya boshlig'ining rafiqasi markaziy qahramonlar sifatida namoyon bo'ladi.", poster: "https://image.tmdb.org/t/p/w500/vQWk5YBFWF4bZaofAbv0tShwBvQ.jpg" },
+                { name: "Schindler's List", year: 1993, duration: "3h 15min", imdb: 9.0, genre: "Biography, Drama", dubbing: true, summary: "Ikkinchi jahon urushi va Xolokost dahshatlari paytida nemis tadbirkori Oskar Shindlerning jasorati haqidagi tarixiy asar. U o'z zavodida ishlatish baxonasi bilan mingdan ortiq yahudiylarni o'lim lagerlaridan saqlab qoladi. Insoniylik va fidoyilik qanday qilib eng qorong'u damlarda ham nur bo'lib xizmat qilishi mumkinligini ko'rsatadi.", poster: "https://image.tmdb.org/t/p/w500/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg" },
+                { name: "The Matrix", year: 1999, duration: "2h 16min", imdb: 8.7, genre: "Action, Sci-Fi", dubbing: true, summary: "Oddiy dasturchi Neo biz yashayotgan dunyo aslida sun'iy intellekt tomonidan yaratilgan simulyatsiya ekanligini bilib qoladi. U insoniyatni qullikdan ozod qilish uchun kurashuvchi isyonchilar safiga qo'shiladi. Voqelikni anglash va tanlov qilish haqidagi bu film informatika va falsafani o'zida birlashtiradi.", poster: "https://image.tmdb.org/t/p/w500/p96dm7sCMn4VYAStA6siNz30G1r.jpg" },
+                { name: "Se7en", year: 1995, duration: "2h 07min", imdb: 8.6, genre: "Crime, Thriller", dubbing: true, summary: "Yetti gunoh asosida vahshiyona jinoyatlar sodir etuvchi sirli qotilni qidirayotgan ikki detektivning murakkab sarguzashtlari. Tajribalari turlicha bo'lgan detektivlar qotilning makkor rejasiga duch kelishadi va har bir qadamda o'z ruhiyatlarini sinovdan o'tkazishadi. Qorong'u muhit va kutilmagan yakun sizni so'nggi daqiqagacha larzaga soladi.", poster: "https://image.tmdb.org/t/p/w500/191nKfP0ehp3uIvWqgPbFmI4lv9.jpg" },
+                { name: "Kelinlar qo'zg'oloni", year: 1984, duration: "1h 25min", imdb: 8.3, genre: "Komediya", dubbing: true, summary: "O'zbek oilasidagi qattiqqo'l qaynona Farmon bibi va uning yetti kelini o'rtasidagi ziddiyatlar kulgu ostida tasvirlangan. Kelinlarning o'z huquqlari uchun birlashishi va yangicha hayot tarziga bo'lgan intilishlari o'sha davr uchun dolzarb mavzu edi. Bu komediya oilada ahillik va bir-birini tushunish naqadar muhimligini hazil orqali anglatadi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Saving Private Ryan", year: 1998, duration: "2h 49min", imdb: 8.6, genre: "War, Drama", dubbing: true, summary: "Ikkinchi jahon urushi paytida, bir oilaning uchta o'g'li halok bo'lgach, tirik qolgan to'rtinchi o'g'ilni qutqarish uchun yuborilgan mard askarlar guruhi. Urush maydonining dahshatli va realistik manzaralari dushman ortiga o'tgan askarlar jasorati bilan uyg'unlashadi. Bitta inson hayotini saqlash uchun qanchalik katta qurbonliklar kerakligi savolini qo'yadi.", poster: "https://image.tmdb.org/t/p/w500/uqx37cS8cpHg8U35f9U5IBlrCV3.jpg" },
+                { name: "The Lion King", year: 1994, duration: "1h 28min", imdb: 8.5, genre: "Animation, Adventure", dubbing: true, summary: "Qirol o'g'li mitti sher Simba xiyonat tufayli o'z vatanidan uzoqlashadi va yangi do'stlar orttiradi. U ulg'ayib, o'z taxtini qaytarib olishi va otasining merosini munosib davom ettirishi kerak bo'ladi. Tabiat qonunlari va o'z mas'uliyatini anglash haqidagi bu asar har qanday yoshdagi tomoshabinni o'ziga maftun etadi.", poster: "https://image.tmdb.org/t/p/w500/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg" },
+                { name: "Spirited Away", year: 2001, duration: "2h 5min", imdb: 8.6, genre: "Animation, Fantasy", dubbing: true, summary: "Sehrli va sirli dunyoga adashib tushib qolgan mitti qizcha Chihiro o'z ota-onasini qutqarishga harakat qiladi. U g'aroyib mavjudotlar va ruhlar olamida omon qolish uchun o'z ishi va jasoratidan foydalanadi. Yapon mifologiyasi va insonning ichki kuchi haqidagi bu multfilm vizual san'atning yuksak namunasidir.", poster: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg" },
+                { name: "Coco", year: 2017, duration: "1h 45min", imdb: 8.4, genre: "Animation, Music", dubbing: true, summary: "Musiqaga ishtiyoqi baland bo'lgan bolakay Miguel o'z ajdodlari olamiga sarguzashtli sayohat qiladi. U o'z oilasining sirlarini ochadi va an'analarning, xotiralarning naqadar muhimligini tushunadi. Ham kulgili, ham ta'sirli bo'lgan bu film har bir insonning qalbida yashirin orzulari va oilaviy rishtalari haqida so'zlaydi.", poster: "https://image.tmdb.org/t/p/w500/6Ryitt95xrO8KXuqRGm1fUuNwqF.jpg" },
+                { name: "Joker", year: 2019, duration: "2h 2min", imdb: 8.4, genre: "Crime, Drama", dubbing: true, summary: "Jamiyat tomonidan chetlatilgan va ruhiy tushkunlikda bo'lgan Artur Flekning qanday qilib yomon qotil — Jokerga aylanishi haqidagi psixologik drama. Shahardagi xaos va insoniy loqaydlik uning taqdirini butkul o'zgartirib yuboradi. Film insoniy dard va tizimning nuqsonlari haqida og'riqli savollarni o'rtaga tashlaydi.", poster: "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg" },
+                { name: "Hamilton", year: 2020, duration: "2h 40min", imdb: 8.4, genre: "Musical, History", dubbing: false, summary: "Amerika Qo'shma Shtatlarining asoschilaridan biri Aleksandr Hamiltonning hayoti va ijodi haqidagi zamonaviy myuzikl. Hip-hop va jazz uslubidagi qo'shiqlar orqali tarixiy voqealar yangicha ruhda talqin etilgan. Siyosat, muhabbat va xiyonat o'rtasidagi kurashlarni ushbu hayratlanarli sahnaviy asarda ko'rishingiz mumkin.", poster: "https://image.tmdb.org/t/p/w500/h1B7tW0t399VDjAcWJh8m87469b.jpg" },
+                { name: "Wall-E", year: 2008, duration: "1h 38min", imdb: 8.4, genre: "Animation, Sci-Fi", dubbing: true, summary: "Insoniyat tomonidan tashlab ketilgan kimsasiz yerda yolg'iz qolgan mitti robot Wall-E haqidagi ta'sirli hikoya. U o'zining kundalik ishi bilan shug'ullanib yurib, fazodan kelgan zamonaviy robot Evani uchratib qoladi. Ularning sevgisi nafaqat ularni, balki butun insoniyat taqdirini o'zgartirishga qodir bo'ladi.", poster: "https://image.tmdb.org/t/p/w500/gPNWVCp0zrHRmwfovUpUQO44sts.jpg" },
+                { name: "Up", year: 2009, duration: "1h 36min", imdb: 8.3, genre: "Animation, Adventure", dubbing: true, summary: "Qariya Karl Fredriksen o'z uyi bilan birga ko'kka ko'tarilib, marhum rafiqasining orzusini amalga oshirishga qaror qiladi. U kutilmaganda kichik bolakay Rassel bilan birga sarguzashtlar olamiga tushib qoladi. Do'stlik, yo'qotish va yangi maqsadlar sari intilish haqidagi bu multfilm sizni ham kuldiradi, ham yig'latadi.", poster: "https://image.tmdb.org/t/p/w500/mFvoEwSfLqbcWwFsDjQebn9bzFe.jpg" },
+                { name: "Toy Story", year: 1995, duration: "1h 21min", imdb: 8.3, genre: "Animation", dubbing: true, summary: "O'yinchoqlarning odamlar yo'q paytda boshlanadigan sirli va qiziqarli hayoti haqidagi multfilm. Kovboy Vudi va fazogir Bazz o'rtasidagi raqobat va keyinchalik paydo bo'lgan do'stlik hikoya qilinadi. Ular o'z egalari bo'lgan Endi uchun eng sevimli bo'lishga intilishadi va sadoqat naqadar muhimligini isbotlashadi.", poster: "https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg" },
+                { name: "Forrest Gump", year: 1994, duration: "2h 22min", imdb: 8.8, genre: "Drama, Romance", dubbing: true, summary: "Sodda va aqliy zaif bo'lsa-da, katta qalb sohibi Forrest Gumpning hayratlanarli sarguzashtlari. U o'zining samimiyligi bilan dunyo tarixidagi bir qancha muhim voqealar markazida bo'lib qoladi. Film hayot kutilmagan sovg'alarga to'la ekanligi va har bir inson baxtga loyiqligi haqida go'zal hikoya qiladi.", poster: "https://image.tmdb.org/t/p/w500/arw2vcBveWOvI6CST6W7TNiqUX1.jpg" },
+                { name: "Heat", year: 1995, duration: "2h 50min", imdb: 8.3, genre: "Action, Crime", dubbing: true, summary: "Professional bank o'g'risi Nil Makkoli va uni ushlashga intilayotgan tajribali detektiv Vinsent Xanna o'rtasidagi 'mushuk va sichqon' o'yini. Ikki kuchli iroda sohibining bir-biriga bo'lgan hurmati va bir vaqtning o'zida qarama-qarshi kurashlari mohirona tasvirlangan. Har bir qadamda o'lim xavfi bo'lgan bu duel intellektual jangari janrining cho'qqisidir.", poster: "https://image.tmdb.org/t/p/w500/lw96Nis67G9X8TmoXp9p97GZ96U.jpg" },
+                { name: "The Godfather: Part II", year: 1974, duration: "3h 22min", imdb: 9.0, genre: "Crime, Drama", dubbing: true, summary: "Korleone oilasi hikoyasining davomi bo'lib, bir vaqtning o'zida yangi rahbar Mayklning oilani kengaytirishi va otasi Vitoning yoshligi ko'rsatiladi. Oilaviy biznesning shafqatsizligi va hokimiyatni saqlab qolish uchun qilingan qiyin qarorlar markaziy mavzu. Xiyonat va sadoqat o'rtasidagi chegara qanday qilib o'chib ketishi hayratlanarli tarzda bayon etilgan.", poster: "https://image.tmdb.org/t/p/w500/bMadFzhjy9T7pUv7pS0UN1pvUik.jpg" },
+                { name: "Goodfellas", year: 1990, duration: "2h 25min", imdb: 8.7, genre: "Crime, Drama", dubbing: true, summary: "Genri Hill ismli yigitning yoshligidan mafiya olamiga qiziqishi va u yerda munosib o'rin egallashi haqidagi haqiqiy voqeaga asoslangan film. U jinoyat olamining hashamatli va xavfli tomonlarini o'z boshidan kechiradi. Biroq sadoqat xiyonatga aylanganida, uning butun hayoti halokat yoqasida qoladi.", poster: "https://image.tmdb.org/t/p/w500/aKuFiU8tVZ5Sbtv78GuxAWS1oR6.jpg" },
+                { name: "12 Angry Men", year: 1957, duration: "1h 36min", imdb: 9.0, genre: "Crime, Drama", dubbing: true, summary: "O'n ikki nafar hakam yagona xonada to'planib, o'smir yigityning qotillikda aybdor yoki yo'qligini hal qilishlari kerak. Dastlab hamma uni aybdor deb hisoblasa-da, birgina hakamning shubhasi butun voqealar rivojini o'zgartirib yuboradi. Inson taqdiri, adolat va shaxsiy qarashlar o'rtasidagi keskin kurash kishini hayratga soladi.", poster: "https://image.tmdb.org/t/p/w500/ow3wq89wM8qd5X7hWKxiRfsFf9C.jpg" },
+                { name: "Fight Club", year: 1999, duration: "2h 19min", imdb: 8.8, genre: "Drama", dubbing: true, summary: "Zerikarli hayotdan bezigan ofis xodimi sirli sovun sotuvchisi Tayler Derden bilan tanishadi. Ular birgalikda jamiyat checklovlaridan xoli bo'lgan, 'Jang klubi' deb nomlangan maxfiy tashkilot tuzishadi. Film insoniy erk, iste'molchilik madaniyati va shaxsiyatning ikkilanishi haqidagi g'ayritabiiy va chuqur falsafiy asardir.", poster: "https://image.tmdb.org/t/p/w500/2lECpi35Hnbpa4y46JX0aY3AWTy.jpg" },
+                { name: "The Lord of the Rings: The Return of the King", year: 2003, duration: "3h 21min", imdb: 9.0, genre: "Adventure, Fantasy", dubbing: true, summary: "O'rta yer dunyosining taqdiri hal bo'ladigan so'nggi va eng buyuk janglar davri. Frodo va Sem uzukni yo'q qilish uchun xavfli yo'lni davom ettirishadi, Aragorn esa o'z xalqining haqiqiy qiroli sifatida qo'shinni boshlaydi. Yovuzlik va ezgulik o'rtasidagi bu kurash vizual effektlar va epik sujeti bilan kino tarixida o'chmas iz qoldirgan.", poster: "https://image.tmdb.org/t/p/w500/2u7zbn8EudG6kLlBzUYqP8RyFU4.jpg" },
+                { name: "The Good, the Bad and the Ugly", year: 1966, duration: "2h 41min", imdb: 8.8, genre: "Western", dubbing: true, summary: "Amerika fuqarolar urushi paytida yashirib qo'yilgan oltinni topish maqsadida harakat qilayotgan uch nafar qurollangan kishi haqidagi klassik vestern. Ular bir-birlariga ishonishmasa-da, maqsad sari birga borishga majbur bo'lishadi. Sergio Leonening betakror rejissyorligi va Ennio Morrikonening musiqasi filmni san'at darajasiga ko'targan.", poster: "https://image.tmdb.org/t/p/w500/4Mfp4ouiGPmYGVw8J9pa3q7de5b.jpg" },
+                { name: "Armon", year: 1986, duration: "1h 20min", imdb: 8.2, genre: "Drama", dubbing: true, summary: "Ikkinchi jahon urushi yillarida o'zbek qishloqlaridagi og'ir hayot va insoniy tuyg'ular silsilasi. Film nafaqat front ortidagi mehnatkash xalq, balki ularning ichki kechinmalari, orzu-umidlari va armonlari haqida hikoya qiladi. Sog'inch va sadoqat mavzulari mohirona tasvirlangan bo'lib, har bir tomoshabinning qalbiga yo'l topadi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Suyunchi", year: 1982, duration: "1h 15min", imdb: 8.1, genre: "Comedy, Drama", dubbing: true, summary: "Anzurat buvi — qishloq hayotining tartib-intizomi va an'analari qo'riqchisi. Uning qat'iy xarakteri va oilasiga bo'lgan mehri o'zaro kulgili va ta'sirli vaziyatlarni keltirib chiqaradi. Bu film o'zbek ayolinining matonati, dono maslahatlari va hayotsevarligi haqidagi samimiy va o'lmas asardir.", poster: "https://i.ibb.co/vzKj9Wz/suyunchi.jpg" },
+                { name: "To'ylar muborak", year: 1978, duration: "1h 25min", imdb: 7.9, genre: "Comedy", dubbing: true, summary: "Kuyov o'z to'yi kuni kutilmagan sarguzashtlarga va kulgili vaziyatlarga duch keladi. Uni yo'lda uchratgan har bir inson o'ziga xos tarzda 'yordam' beradi, bu esa to'y rejasini butkul o'zgartirib yuboradi. O'zbek madaniyatidagi to'y an'analari va xalqaro mehmondo'stlik hazil orqali juda chiroyli ochib berilgan.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Temir xotin", year: 1990, duration: "1h 10min", imdb: 8.5, genre: "Comedy, Sci-Fi", dubbing: true, summary: "O'zbek qishlog'iga olim tomonidan olib kelingan robot-ayol va u keltirib chiqargan g'aroyib voqealar haqidagi fantastik komediya. Robotning insoniy tuyg'ularni o'rganishi va qishloq ahlining unga munosabati juda qiziqarli tasvirlangan. Bu film ilm-fan va insoniylik o'rtasidagi muvozanat haqida kulgu orqali so'zlaydi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Voiz", year: 1998, duration: "1h 30min", imdb: 8.0, genre: "Drama", dubbing: true, summary: "Inqilob davridagi murakkab va ziddiyatli taqdirlar haqidagi chuqur mazmunli film. Qahramon o'zining nutqlari va qarashlari bilan xalqni uyg'otishga harakat qiladi, ammo u davrning shafqatsiz qonunlariga duch keladi. Inson huquqlari, erkinlik va sadoqat haqidagi bu asar tomoshabinni o'ylashga undaydi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Osmondagi bolalar", year: 2002, duration: "1h 40min", imdb: 8.6, genre: "Drama, Comedy", dubbing: true, summary: "To'rt nafar do'stning yoshlik davridagi sarguzashtlari, orzulari va ilk muhabbatlari haqidagi samimiy hikoya. Ular hayot yo'llarida turli to'siqlarga duch kelishadi va do'stlikning kuchini anglab yetishadi. Zamonaviy o'zbek yoshlarining hayoti va intilishlari ushbu filmda juda tabiiy va go'zal tasvirlangan.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Super kelinchak", year: 2008, duration: "1h 35min", imdb: 7.5, genre: "Comedy, Romance", dubbing: true, summary: "Zamonaviy va sho'x kelinning qattiqqo'l qaynonasining ko'nglini olish uchun qilgan harakatlari haqidagi quvnoq komediya. U mahorat bilan har qanday qiyin yumushlarni bajaradi va oilada o'z o'rnini topadi. Bu film zamonaviy va an'anaviy qarashlar o'rtasidagi kelishuv va baxtli oila sirlari haqida hikoya qiladi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Janob hech kim", year: 2009, duration: "1h 25min", imdb: 7.2, genre: "Comedy", dubbing: true, summary: "O'zining g'ayritabiiy harakatlari va kutilmagan qarorlari bilan hammani hayratda qoldiradigan qahramonning sarguzashtlari. U doimo kulgili vaziyatlarga tushib qoladi, ammo o'zining beg'uborligi bilan atrofidagilarning mehrini qozonadi. Kutilmagan voqealar va samimiy kulgu sizga yaxshi kayfiyat bag'ishlaydi.", poster: "https://i.ytimg.com/vi/U6U7S0lV-oQ/hqdefault.jpg" },
+                { name: "Maftuningman", year: 1958, duration: "1h 25min", imdb: 8.4, genre: "Musical, Comedy", dubbing: true, summary: "O'zbek kino san'atining eng mashhur musiqiy komediyalaridan biri bo'lib, u yerda xalqaro do'stlik va san'at ulug'lanadi. Ajoyib qo'shiqlar, raqslar va betakror aktyorlar ijrosi filmni haqiqiy durdonaga aylantirgan. Toshkentning va o'sha davrning go'zal manzaralari sizni sehrli dunyoga yetaklaydi.", poster: "https://i.ytimg.com/vi/8U-N6N0E-K8/hqdefault.jpg" },
+                { name: "Kichkina tabib", year: 1998, duration: "1h 15min", imdb: 7.8, genre: "Comedy, Family", dubbing: true, summary: "Daho va zehni o'tkir bolakayning qishloqdagi kundalik hayoti va u yerda o'z bilimi bilan barchaga yordam berishi haqidagi quvnoq film. Uning kutilmagan 'davolash' usullari va dono fikrlari kattalarni ham hayratda qoldiradi. Bolalikning beg'uborligi va bilimning kuchi haqidagi hayotiy va qiziqarli hikoya.", poster: "https://i.ytimg.com/vi/v_scv_t1S68/hqdefault.jpg" },
+                { name: "Scorpion", year: 2018, duration: "1h 45min", imdb: 6.5, genre: "Action, Thriller", dubbing: true, summary: "Maxsus xizmat xodimlarining xalqaro terrorizmga qarshi kurashi va ularning xavfli topshiriqlarni bajarishi haqidagi zamonaviy triller. Kuchli jangarilar sahnalari va kutilmagan sujet burilishlari sizni ekran qarshisida ushlab turadi. Vatan xavfsizligi va jasorat haqidagi bu film yuqori texnologiyalar yordamida suratga olingan.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+                { name: "Parizod", year: 2012, duration: "1h 30min", imdb: 8.1, genre: "Drama, Myth", dubbing: true, summary: "Go'zal va sirli qizning tog'li qishloqdagi hayoti va uning kutilmagan taqdiri haqidagi afsonaviy drama. Insonlar o'rtasidagi munosabatlar, rashk va ezgulik o'rtasidagi kurashlar mohirona ko'rsatilgan. Tabiatning sehrli manzaralari va insonning ichki go'zalligi haqidagi ushbu asar kishini chuqur mushohadaga chorlaydi.", poster: "https://i.ytimg.com/vi/3R_0_N55X7k/hqdefault.jpg" },
+                { name: "Tangalik bolalar", year: 1990, duration: "1h 10min", imdb: 8.3, genre: "Comedy, Drama", dubbing: true, summary: "Qishloq bolalarining bir vaqtning o'zida ham qiziqarli, ham qiyin bo'lgan hayoti haqidagi samimiy film. Ularning sho'xliklari, orzulari va oz bo'lsa-da pul topishga bo'lgan harakatlari kulgu orqali tasvirlangan. Bolalikning begubor xotiralari va o'sha davrning o'ziga xos muhiti sizni o'tmishga qaytaradi.", poster: "https://i.ytimg.com/vi/qV1D6VzP8w0/hqdefault.jpg" },
             ],
             categories: {
-                jahon: {
-                    title: "Jahon Top 20",
-                    list: ["The Shawshank Redemption", "The Godfather", "Schindler's List", "Pulp Fiction", "Inception", "Interstellar", "The Dark Knight", "Forrest Gump", "The Matrix", "Parasite", "Se7en", "The Silence of the Lambs", "The Green Mile", "Gladiator", "Saving Private Ryan", "The Lion King", "Spirited Away", "Coco", "Joker", "Hamilton"]
-                },
-                uzbek: {
-                    title: "O'zbek Top 20",
-                    list: ["Mahallada duv-duv gap", "O'tkan kunlar", "Shum bola", "Suyunchi", "Kelinlar qo'zg'oloni", "Abdullajon", "To'ylar muborak", "Maftuningman", "Temir xotin", "Osmondagi bolalar", "Vatan", "Kichkina tabib", "Ilhaq", "Baron", "Scorpion", "Parizod", "2000 qo'shiq", "Is'hoqxon Ibrat", "Ayol qadri", "Chashma"]
-                },
-                fantastika: {
-                    title: "Fantastika",
-                    list: ["Inception", "Interstellar", "The Matrix", "Avatar", "Abdullajon", "Temir xotin", "Scorpion"]
-                },
-                komediya: {
-                    title: "Komediya",
-                    list: ["Mahallada duv-duv gap", "Shum bola", "Kelinlar qo'zg'oloni", "Forrest Gump", "Toy Story"]
-                },
-                drama: {
-                    title: "Drama",
-                    list: ["O'tkan kunlar", "Schindler's List", "Ilhaq", "Vatan", "The Shawshank Redemption", "The Green Mile"]
-                },
-                multfilm: {
-                    title: "Multfilm",
-                    list: ["The Lion King", "Coco", "Wall-E", "Up", "Kichkina tabib"]
-                }
+                jahon: { title: "Jahon Top 20", list: ["The Shawshank Redemption", "The Godfather", "The Dark Knight", "Schindler's List", "Inception", "Interstellar", "The Matrix", "Pulp Fiction", "Se7en", "Gladiator", "Titanic", "Intouchables", "Avatar", "Forrest Gump", "Heat", "The Godfather: Part II", "12 Angry Men", "Fight Club", "The Lord of the Rings: The Return of the King", "Goodfellas"] },
+                uzbek: { title: "O'zbek Top 20", list: ["O'tkan kunlar", "Shum bola", "Abdullajon", "Mahallada duv-duv gap", "Ilhaq", "Vatan", "Kelinlar qo'zg'oloni", "Maftuningman", "Kichkina tabib", "Tangalik bolalar", "Parizod", "Armon", "Suyunchi", "To'ylar muborak", "Temir xotin", "Voiz", "Osmondagi bolalar", "Super kelinchak", "Janob hech kim"] },
+                fantastika: { title: "Fantastika", list: ["Inception", "Interstellar", "The Matrix", "Avatar", "Abdullajon", "Wall-E", "Temir xotin"] },
+                komediya: { title: "Komediya", list: ["Mahallada duv-duv gap", "Shum bola", "Kelinlar qo'zg'oloni", "Intouchables", "Abdullajon", "Toy Story", "Maftuningman", "Tangalik bolalar", "Suyunchi", "To'ylar muborak", "Super kelinchak", "Janob hech kim"] },
+                drama: { title: "Drama", list: ["The Shawshank Redemption", "The Godfather", "Schindler's List", "O'tkan kunlar", "Ilhaq", "Vatan", "Titanic", "Joker", "Forrest Gump", "Parizod", "Armon", "Voiz", "Osmondagi bolalar", "Fight Club", "12 Angry Men", "The Godfather: Part II", "Goodfellas"] },
+                multfilm: { title: "Multfilm", list: ["The Lion King", "Coco", "Toy Story", "Up", "Wall-E", "Spirited Away"] }
             }
         };
 
-        function showCategory(id) {
+        // Placeholder Animation
+        const placeholders = ["Shum bola", "Interstellar", "Titanic", "Abdullajon", "Inception", "Voqeani tasvirlab bering..."];
+        let pIdx = 0;
+        setInterval(() => {
+            const input = document.getElementById('movieInput');
+            if (document.activeElement !== input) {
+                input.placeholder = "Masalan: " + placeholders[pIdx];
+                pIdx = (pIdx + 1) % placeholders.length;
+            }
+        }, 3000);
+
+        function showMovie(name) {
+            const movie = database.movies.find(m => m.name.toLowerCase() === name.toLowerCase());
+            if (!movie) return;
+
+            const area = document.getElementById('displayArea');
+            area.innerHTML = `
+                <div class="movie-card">
+                    <img class="movie-poster" src="${movie.poster}" alt="${movie.name}" 
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/220x330/1e293b/38bdf8?text=Poster+Yuklanmadi'">
+                    <button class="fav-btn" onclick="toggleFav(this)">❤</button>
+                    <div class="movie-content">
+                        <div class="movie-name">${movie.name} (${movie.year})</div>
+                        <div class="movie-meta">
+                            <span class="badge badge-rating">⭐ IMDb: ${movie.imdb}/10</span>
+                            <span class="badge">⏳ ${movie.duration || '2h 10min'}</span>
+                            ${movie.dubbing ? '<span class="badge badge-dub">🇺🇿 O\'zbekcha</span>' : ''}
+                        </div>
+                        <div class="movie-summary">${movie.summary}</div>
+                        <div>
+                            <a href="https://www.youtube.com/results?search_query=${movie.name}+movie" target="_blank" class="watch-btn">🎬 Ko'rish (Watch Now)</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            area.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showCategory(id, btn) {
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
             const cat = database.categories[id];
             const area = document.getElementById('displayArea');
             area.innerHTML = `
-            <div class="movie-card">
-                <div class="cat-title">📌 [${cat.title}] bo'yicha eng sara filmlar:</div>
+                <div style="margin-bottom: 20px;">
+                    <h2 style="color:var(--primary);">${cat.title}</h2>
+                    <p style="color:#94a3b8; font-size:14px;">Batafsil ma'lumot uchun kinoni tanlang:</p>
+                </div>
                 <div id="listContent"></div>
-            </div>
-        `;
+            `;
 
             const content = document.getElementById('listContent');
             cat.list.forEach((name, index) => {
                 const movie = database.movies.find(m => m.name.toLowerCase() === name.toLowerCase());
-                const rating = movie ? movie.imdb : "N/A";
+                if (!movie) return;
+
                 const row = document.createElement('div');
                 row.className = 'list-item';
+                row.onclick = () => showMovie(name);
                 row.innerHTML = `
-                <span>${index + 1}. ${name}</span>
-                <span class="stars">⭐ ${rating}</span>
-            `;
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <span style="color:var(--primary); font-weight:bold;">${index + 1}</span>
+                        <span style="font-weight:600;">${name}</span>
+                    </div>
+                    <span style="color:var(--accent); font-weight:bold;">⭐ ${movie.imdb}</span>
+                `;
                 content.appendChild(row);
             });
             area.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Fuzzy search utilities
-        function getSimilarity(s1, s2) {
-            let longer = s1.toLowerCase();
-            let shorter = s2.toLowerCase();
-            if (s1.length < s2.length) {
-                longer = s2.toLowerCase();
-                shorter = s1.toLowerCase();
+        function luckyPick() {
+            const randomMovie = database.movies[Math.floor(Math.random() * database.movies.length)];
+            showMovie(randomMovie.name);
+        }
+
+        function startVoiceSearch() {
+            alert("Ovozli qidiruv yoqilmoqda... (MVP versiyasida simulyatsiya qilinadi). Iltimos, kino nomini ayting.");
+        }
+
+        function toggleFav(btn) {
+            const isRed = btn.style.color === 'red';
+            btn.style.color = isRed ? 'white' : 'red';
+            btn.style.background = isRed ? 'rgba(0,0,0,0.5)' : 'rgba(239, 68, 68, 0.2)';
+        }
+
+        function handleSearch() {
+            const input = document.getElementById('movieInput').value.toLowerCase().trim();
+            if (!input) return;
+
+            const area = document.getElementById('displayArea');
+            area.innerHTML = ''; // To'liq tozalash
+
+            let movie = database.movies.find(m => m.name.toLowerCase().includes(input));
+            if (movie) {
+                showMovie(movie.name);
+            } else {
+                let bestMatch = null;
+                let highestScore = 0;
+                database.movies.forEach(m => {
+                    const score = getSimilarity(input, m.name);
+                    if (score > highestScore) { highestScore = score; bestMatch = m; }
+                });
+
+                if (highestScore >= 0.7) {
+                    area.innerHTML = `<p style="color: var(--primary); margin-bottom: 15px;">Siz '${bestMatch.name}' kinosini qidirgan bo'lsangiz kerak:</p>`;
+                    showMovie(bestMatch.name);
+                } else {
+                    area.innerHTML = `
+                        <div class="movie-card" style="padding:40px; text-align:center; display:block;">
+                            <h3 style="color:var(--accent);">🔍 Natija topilmadi</h3>
+                            <p style="color:#94a3b8;">"${input}" kinosi topilmadi. Balki Lucky Pick orqali yangi narsa topib ko'rarsiz?</p>
+                        </div>
+                    `;
+                }
             }
+        }
+
+        // Enter orqali izlash
+        document.getElementById('movieInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleSearch();
+            }
+        });
+
+        function getSimilarity(s1, s2) {
+            let longer = s1.toLowerCase(); let shorter = s2.toLowerCase();
+            if (s1.length < s2.length) { longer = s2.toLowerCase(); shorter = s1.toLowerCase(); }
             let longerLength = longer.length;
             if (longerLength === 0) return 1.0;
             return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
@@ -310,98 +695,13 @@
                             let newValue = costs[j - 1];
                             if (s1.charAt(i - 1) != s2.charAt(j - 1))
                                 newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
-                            costs[j - 1] = lastValue;
-                            lastValue = newValue;
+                            costs[j - 1] = lastValue; lastValue = newValue;
                         }
                     }
                 }
                 if (i > 0) costs[s2.length] = lastValue;
             }
             return costs[s2.length];
-        }
-
-        function handleSearch() {
-            const input = document.getElementById('movieInput').value.toLowerCase().trim();
-            if (!input) return;
-
-            const area = document.getElementById('displayArea');
-
-            // 1. Check if input is too short or unclear
-            if (input.length < 3) {
-                const randomOptions = database.movies.sort(() => 0.5 - Math.random()).slice(0, 3).map(m => m.name).join(", ");
-                area.innerHTML = `
-                <div class="movie-card" style="border: 1px solid #ef4444;">
-                    <p>⚠️ Kechirasiz, aynan qaysi kinoni nazarda tutdingiz? So'rov juda qisqa.</p>
-                    <p>Balki mana bularning biridir: <strong>${randomOptions}</strong></p>
-                </div>
-            `;
-                return;
-            }
-
-            // 2. Check if input is a category name
-            for (let key in database.categories) {
-                if (database.categories[key].title.toLowerCase().includes(input)) {
-                    showCategory(key);
-                    return;
-                }
-            }
-
-            // 3. Check for exact or partial match in DB
-            let movie = database.movies.find(m => m.name.toLowerCase().includes(input));
-
-            // 4. Fuzzy search if no direct match (80% similarity threshold)
-            if (!movie) {
-                let bestMatch = null;
-                let highestScore = 0;
-
-                database.movies.forEach(m => {
-                    const score = getSimilarity(input, m.name);
-                    if (score > highestScore) {
-                        highestScore = score;
-                        bestMatch = m;
-                    }
-                });
-
-                if (highestScore >= 0.8) {
-                    area.innerHTML = `
-                    <div class="movie-card" style="border-left: 5px solid var(--primary);">
-                        <p style="color: var(--primary); font-weight: bold; margin-bottom: 15px;">Siz '${bestMatch.name}' kinosini qidirgan bo'lsangiz kerak. Mana u haqida ma'lumot:</p>
-                        <div class="movie-name">🎥 ${bestMatch.name}</div>
-                        <div class="info-row"><span class="label">⭐ IMDb:</span> ${bestMatch.imdb}/10</div>
-                        <div class="info-row"><span class="label">🎭 Janr:</span> ${bestMatch.genre}</div>
-                    </div>
-                `;
-                    area.scrollIntoView({ behavior: 'smooth' });
-                    return;
-                }
-            }
-
-            if (movie) {
-                area.innerHTML = `
-                <div class="movie-card">
-                    <div class="movie-name">🎥 ${movie.name}</div>
-                    <div class="info-row"><span class="label">⭐ IMDb:</span> ${movie.imdb}/10</div>
-                    <div class="info-row"><span class="label">🎭 Janr:</span> ${movie.genre}</div>
-                    <p style="margin-top:15px; font-style:italic; color:#94a3b8;">Bazada mavjud ma'lumot.</p>
-                </div>
-            `;
-                area.scrollIntoView({ behavior: 'smooth' });
-                return;
-            }
-
-            // 5. Fallback: No match and no fuzzy match
-            area.innerHTML = `
-            <div class="search-fallback">
-                <h3 style="color:var(--accent);">🔍 Qidiruv natijasi</h3>
-                <p>"${input}" kinosi ichki bazada topilmadi.</p>
-                <p>Balki nomini xato yozgandirsiz? Yoki bizda hali bu kino yo'q.</p>
-                <button onclick="simulateWebSearch('${input}')" style="margin-top:20px; background:var(--accent);">Global bazadan qidirish</button>
-            </div>
-        `;
-        }
-
-        function simulateWebSearch(term) {
-            alert(`${term} uchun internetdan ma'lumot qidirilmoqda. (Bu MVP versiyasida simulyatsiya qilinadi).`);
         }
     </script>
 

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Poster Audit - CineFinder AI</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --primary: #38bdf8;
+            --accent: #fbbf24;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 40px;
+            margin: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 40px;
+        }
+
+        .audit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .movie-item {
+            background: var(--card);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+
+        .movie-item:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .poster-container {
+            width: 100%;
+            height: 400px;
+            background-size: cover;
+            background-position: center 20%;
+            /* Focus on actors' faces */
+            background-color: #000;
+            transition: background-position 0.3s ease;
+        }
+
+        .poster-container:hover {
+            background-position: center center;
+        }
+
+        .info {
+            padding: 15px;
+        }
+
+        .name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .meta {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .url {
+            font-size: 0.8rem;
+            color: var(--primary);
+            word-break: break-all;
+            background: #0f172a;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .incorrect-btn {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 20px;
+            }
+
+            .audit-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                gap: 15px;
+            }
+
+            .poster-container {
+                height: 450px;
+                /* Better height for mobile posters */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .audit-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎬 Movie Poster Audit Report</h1>
+    <p style="text-align: center; color: #94a3b8; margin-bottom: 40px;">
+        Jami: <span id="count">0</span> ta kino topildi. Iltimos, posterlar mos kelishini tekshiring.
+    </p>
+
+    <div class="audit-grid" id="auditGrid"></div>
+
+    <script>
+        // Database from index.html
+        const movies = [
+            { name: "The Shawshank Redemption", year: 1994, duration: "2h 22min", imdb: 9.3, genre: "Drama", dubbing: true, summary: "Adolatsiz qamalgan bankirning qochish va umid haqidagi hikoyasi.", poster: "https://image.tmdb.org/t/p/w500/zgyRWri2luavFepRC2vHwYQcT0t.jpg" },
+            { name: "The Godfather", year: 1972, duration: "2h 55min", imdb: 9.2, genre: "Crime, Drama", dubbing: true, summary: "Italiya-Amerika mafiya oilasining qudrati va uning vorisi haqida.", poster: "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg" },
+            { name: "The Dark Knight", year: 2008, duration: "2h 32min", imdb: 9.0, genre: "Action, Crime", dubbing: true, summary: "Betmen Jokerga qarshi kurashadi, bu Gotham shahrini butkul o‘zgartiradi.", poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg" },
+            { name: "Inception", year: 2010, duration: "2h 28min", imdb: 8.8, genre: "Action, Sci-Fi", dubbing: true, summary: "Tushlar ichida tush ko‘rib, ma’lumotlarni o‘g‘irlash siri haqida.", poster: "https://image.tmdb.org/t/p/w500/xlaY2zyzMfkhk0HSC5VUwzoZPU1.jpg" },
+            { name: "Interstellar", year: 2014, duration: "2h 49min", imdb: 8.7, genre: "Adventure, Sci-Fi", dubbing: true, summary: "Insoniyatni qutqarish uchun koinotning eng uzoq nuqtalariga sayohat.", poster: "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" },
+            { name: "Titanic", year: 1997, duration: "3h 14min", imdb: 7.9, genre: "Drama, Romance", dubbing: true, summary: "Hashamatli kemaning cho‘kishi va ikki yoshning fojiali sevgisi.", poster: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg" },
+            { name: "Intouchables", year: 2011, duration: "1h 52min", imdb: 8.5, genre: "Biography, Comedy", dubbing: true, summary: "Falaj bo‘lib qolgan boy kishi va uning kambag‘al yordamchisi o‘rtasidagi do‘stlik.", poster: "https://image.tmdb.org/t/p/w500/1QU7HKgsQbGpzsJbJK4pAVQV9F5.jpg" },
+            { name: "Shum bola", year: 1977, duration: "1h 30min", imdb: 8.4, genre: "Sarguzasht, Komediya", dubbing: true, summary: "G'afur G'ulom asari asosida yosh bolaning Toshkent ko'chalaridagi sarguzashtlari.", poster: "https://image.tmdb.org/t/p/w500/sooJLXgLreKv5f0XNBA2e49O3Hj.jpg" },
+            { name: "Abdullajon", year: 1991, duration: "1h 25min", imdb: 8.4, genre: "Fantastika, Komediya", dubbing: true, summary: "O‘zbek qishlog‘iga tushib qolgan o‘zga sayyoralik bola haqida.", poster: "https://mw.tvcom.uz/media/upload/tvmiddleware/posters/55657/pb_poster.webp" },
+            { name: "O'tkan kunlar", year: 1969, duration: "2h 10min", imdb: 8.5, genre: "Drama, Tarixiy", dubbing: true, summary: "Abdulla Qodiriy asari. Kumush va Otabekning fojiali sevgi hikoyasi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Avatar", year: 2009, duration: "2h 42min", imdb: 7.9, genre: "Action, Sci-Fi", dubbing: true, summary: "Pandora sayyorasida insoniyat va mahalliy xalq o‘rtasidagi kurash.", poster: "https://image.tmdb.org/t/p/w500/gKY6q7SjCkAU6FqvqWybDYgUKIF.jpg" },
+            { name: "Gladiator", year: 2000, duration: "2h 35min", imdb: 8.5, genre: "Action, Drama", dubbing: true, summary: "Rim generalsining qulga aylanib, gladiator sifatida qasos olishi.", poster: "https://image.tmdb.org/t/p/w500/ty8TGRuvJLPUmAR1H1nRIsgwvim.jpg" },
+            { name: "Mahallada duv-duv gap", year: 1960, duration: "1h 20min", imdb: 8.2, genre: "Komediya", dubbing: true, summary: "Toshkent mahallalaridan biridagi qiziqarli voqealar.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Ilhaq", year: 2020, duration: "2h 15min", imdb: 9.1, genre: "Urush dramasi", dubbing: true, summary: "Besh o‘g‘lini urushga yuborgan onaning cheksiz kutish dardi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Vatan", year: 2006, duration: "2h 00min", imdb: 8.7, genre: "Drama, Urush", dubbing: true, summary: "Ikkinchi jahon urushi va vatanparvarlik haqidagi ta’sirli film.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Pulp Fiction", year: 1994, duration: "2h 34min", imdb: 8.9, genre: "Crime", dubbing: true, summary: "Los-Anjelesdagi jinoyatchilar hayotidan bir-biriga bog‘langan hikoyalar.", poster: "https://image.tmdb.org/t/p/w500/vQWk5YBFWF4bZaofAbv0tShwBvQ.jpg" },
+            { name: "Schindler's List", year: 1993, duration: "3h 15min", imdb: 9.0, genre: "Biography, Drama", dubbing: true, summary: "Xolokost paytida mingdan ortiq yahudiyni qutqargan tadbirkor haqida.", poster: "https://image.tmdb.org/t/p/w500/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg" },
+            { name: "The Matrix", year: 1999, duration: "2h 16min", imdb: 8.7, genre: "Action, Sci-Fi", dubbing: true, summary: "Biz yashayotgan dunyo aslida simulyatsiya ekanligi haqida.", poster: "https://image.tmdb.org/t/p/w500/p96dm7sCMn4VYAStA6siNz30G1r.jpg" },
+            { name: "Se7en", year: 1995, duration: "2h 07min", imdb: 8.6, genre: "Crime, Thriller", dubbing: true, summary: "Yetti gunoh asosida jinoyat sodir etuvchi qotilni qidirayotgan detektivlar.", poster: "https://image.tmdb.org/t/p/w500/191nKfP0ehp3uIvWqgPbFmI4lv9.jpg" },
+            { name: "Kelinlar qo'zg'oloni", year: 1984, duration: "1h 25min", imdb: 8.3, genre: "Komediya", dubbing: true, summary: "Bir oiladagi yettita kelinning qaynonaga qarshi chiqishi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Saving Private Ryan", year: 1998, duration: "2h 49min", imdb: 8.6, genre: "War, Drama", dubbing: true, summary: "Ikkinchi jahon urushi paytida yo'qolgan askarni qidirish operatsiyasi.", poster: "https://image.tmdb.org/t/p/w500/uqx37cS8cpHg8U35f9U5IBlrCV3.jpg" },
+            { name: "The Lion King", year: 1994, duration: "1h 28min", imdb: 8.5, genre: "Animation, Adventure", dubbing: true, summary: "Sher bolasi Simbaning o'z taxtini qaytarib olish yo'lidagi sarguzashtlari.", poster: "https://image.tmdb.org/t/p/w500/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg" },
+            { name: "Spirited Away", year: 2001, duration: "2h 5min", imdb: 8.6, genre: "Animation, Fantasy", dubbing: true, summary: "Sehrli dunyoga tushib qolgan qizchaning ota-onasini qutqarish safari.", poster: "https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg" },
+            { name: "Coco", year: 2017, duration: "1h 45min", imdb: 8.4, genre: "Animation, Music", dubbing: true, summary: "Musiqa orqali o'z ajdodlari tarixini o'rganayotgan bolakayning sarguzashti.", poster: "https://image.tmdb.org/t/p/w500/6Ryitt95xrO8KXuqRGm1fUuNwqF.jpg" },
+            { name: "Joker", year: 2019, duration: "2h 2min", imdb: 8.4, genre: "Crime, Drama", dubbing: true, summary: "Jamiyatdan chetlatilgan insonের qanday qilib yovuz qahramonga aylanishi.", poster: "https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg" },
+            { name: "Hamilton", year: 2020, duration: "2h 40min", imdb: 8.4, genre: "Musical, History", dubbing: false, summary: "AQSH asoschilaridan biri Aleksandr Hamilton hayoti haqidagi myuzikl.", poster: "https://image.tmdb.org/t/p/w500/h1B7tW0t399VDjAcWJh8m87469b.jpg" },
+            { name: "Wall-E", year: 2008, duration: "1h 38min", imdb: 8.4, genre: "Animation, Sci-Fi", dubbing: true, summary: "Kelajakda tashlab ketilgan yerda yolg'iz qolgan robotning sevgisi.", poster: "https://image.tmdb.org/t/p/w500/gPNWVCp0zrHRmwfovUpUQO44sts.jpg" },
+            { name: "Up", year: 2009, duration: "1h 36min", imdb: 8.3, genre: "Animation, Adventure", dubbing: true, summary: "Qariya va bolakayning uchuvchi uyda amalga oshirgan sarguzashtlari.", poster: "https://image.tmdb.org/t/p/w500/mFvoEwSfLqbcWwFsDjQebn9bzFe.jpg" },
+            { name: "Toy Story", year: 1995, duration: "1h 21min", imdb: 8.3, genre: "Animation", dubbing: true, summary: "O'yinchoqlarning hayoti va ularning egasiga bo'lgan sadoqati.", poster: "https://image.tmdb.org/t/p/w500/uXDfjJbdP4ijW5hWSBrPrlKpxab.jpg" },
+            { name: "Forrest Gump", year: 1994, duration: "2h 22min", imdb: 8.8, genre: "Drama, Romance", dubbing: true, summary: "Aqliy zaif insonning Amerika tarixidagi muhim voqealar markazida bo'lishi.", poster: "https://m.media-amazon.com/images/M/MV5BNWIwODRlZDYtY2U3Yy00ZDliLWIzNzUtNjE3YWUxZjdjZjc0XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg" },
+            { name: "Heat", year: 1995, duration: "2h 50min", imdb: 8.3, genre: "Action, Crime", dubbing: true, summary: "Professional o'g'ri va tajribali detektiv o'rtasidagi aqlli kurash.", poster: "https://image.tmdb.org/t/p/original/l9PR9be9ST99U76IuU6p5z7U7FA.jpg" },
+            { name: "The Godfather: Part II", year: 1974, duration: "3h 22min", imdb: 9.0, genre: "Crime, Drama", dubbing: true, summary: "Maykl Korleonening oilaviy biznesni kengaytirishi va otasining yoshligi haqida.", poster: "https://m.media-amazon.com/images/M/MV5BMWMwMGQzZTItY2JlNC00OWZiLWIyMDctMDhmZDRhZGUyYTMzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg" },
+            { name: "12 Angry Men", year: 1957, duration: "1h 36min", imdb: 9.0, genre: "Crime, Drama", dubbing: true, summary: "O'n ikki nafar hakam yosh yigitning taqdirini hal qilish uchun yagona xonada.", poster: "https://image.tmdb.org/t/p/w500/ow3wq89wM8qd5X7hWKxiRfsFf9C.jpg" },
+            { name: "Fight Club", year: 1999, duration: "2h 19min", imdb: 8.8, genre: "Drama", dubbing: true, summary: "Zerikarli hayotdan zerikkan ofis xodimi va sovun sotuvchisining maxfiy klubi.", poster: "https://image.tmdb.org/t/p/w500/2lECpi35Hnbpa4y46JX0aY3AWTy.jpg" },
+            { name: "The Lord of the Rings: The Return of the King", year: 2003, duration: "3h 21min", imdb: 9.0, genre: "Adventure, Fantasy", dubbing: true, summary: "O'rta yer dunyosi uchun so'nggi va hal qiluvchi jang hamda uzukning taqdiri.", poster: "https://image.tmdb.org/t/p/w500/2u7zbn8EudG6kLlBzUYqP8RyFU4.jpg" },
+            { name: "The Good, the Bad and the Ugly", year: 1966, duration: "2h 41min", imdb: 8.8, genre: "Western", dubbing: true, summary: "Uch nafar qurollangan kishi fuqarolar urushi paytida yashirilgan oltinni qidirmoqda.", poster: "https://image.tmdb.org/t/p/w500/4Mfp4ouiGPmYGVw8J9pa3q7de5b.jpg" },
+            { name: "Goodfellas", year: 1990, duration: "2h 25min", imdb: 8.7, genre: "Crime, Drama", dubbing: true, summary: "Genri Hill ismli yigitning mafiya olamidagi ko'tarilishi va qulashi hikoyasi.", poster: "https://m.media-amazon.com/images/M/MV5BMGRjYjllZDYtM2U1OC00N2I0LWEzMWYtN2U2YmFmODU5YjU5XkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_.jpg" },
+            { name: "Armon", year: 1986, duration: "1h 20min", imdb: 8.2, genre: "Drama", dubbing: true, summary: "O'zbek urush davri dramasi, insoniy orzular va sog'inch haqida.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Suyunchi", year: 1982, duration: "1h 15min", imdb: 8.1, genre: "Comedy, Drama", dubbing: true, summary: "Anzurat buvi va uning qishloq hayotidagi qat'iy o'rni haqidagi klassika.", poster: "https://i.ibb.co/vzKj9Wz/suyunchi.jpg" },
+            { name: "To'ylar muborak", year: 1978, duration: "1h 25min", imdb: 7.9, genre: "Comedy", dubbing: true, summary: "To'y kuni kutilmagan sarguzashtlarga duch kelgan kuyov haqida ajoyib komediya.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Temir xotin", year: 1990, duration: "1h 10min", imdb: 8.5, genre: "Comedy, Sci-Fi", dubbing: true, summary: "O'zbek qishlog'idagi robot-ayol va u keltirib chiqargan qiziqarli voqealar.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Voiz", year: 1998, duration: "1h 30min", imdb: 8.0, genre: "Drama", dubbing: true, summary: "Inqilob davridagi murakkab taqdirlar va insoniylik haqidagi film.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Osmondagi bolalar", year: 2002, duration: "1h 40min", imdb: 8.6, genre: "Drama, Comedy", dubbing: true, summary: "To'rt nafar do'stning ulg'ayishi, ilk muhabbat va orzulari haqida.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Super kelinchak", year: 2008, duration: "1h 35min", imdb: 7.5, genre: "Comedy, Romance", dubbing: true, summary: "Zamonaviy kelinning o'z qaynonasini lol qoldirish uchun qilgan harakatlari.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Janob hech kim", year: 2009, duration: "1h 25min", imdb: 7.2, genre: "Comedy", dubbing: true, summary: "Adashgan va doim kulgili vaziyatlarga tushuvchi qahramon sarguzashtlari.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Maftuningman", year: 1958, duration: "1h 25min", imdb: 8.4, genre: "Musical, Comedy", dubbing: true, summary: "O'zbek kino san'atining durdonasi, ajoyib qo'shiqlar va kulgu.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Kichkina tabib", year: 1998, duration: "1h 15min", imdb: 7.8, genre: "Comedy, Family", dubbing: true, summary: "Daho bolakayning qishloqdagi qiziqarli va kulgili hikoyasi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Scorpion", year: 2018, duration: "1h 45min", imdb: 6.5, genre: "Action, Thriller", dubbing: true, summary: "Maxsus xizmat xodimlarining xalqaro terrorizmga qarshi kurashi.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Parizod", year: 2012, duration: "1h 30min", imdb: 8.1, genre: "Drama, Myth", dubbing: true, summary: "Go'zal va sirli qizning tog'li qishloqdagi taqdiri va siri.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" },
+            { name: "Tangalik bolalar", year: 1990, duration: "1h 10min", imdb: 8.3, genre: "Comedy, Drama", dubbing: true, summary: "Qishloq bolalarining sho'xliklari va samimiy orzulari haqida klassik film.", poster: "https://i.pinimg.com/736x/f9/57/29/f957291a1df473e1645062c3175c5fd0.jpg" }
+        ];
+
+        const grid = document.getElementById('auditGrid');
+        const countSpan = document.getElementById('count');
+        countSpan.innerText = movies.length;
+
+        movies.forEach(m => {
+            const item = document.createElement('div');
+            item.className = 'movie-item';
+            item.innerHTML = `
+                <div class="poster-container" style="background-image: url('${m.poster}')"></div>
+                <div class="info">
+                    <div class="name">${m.name} (${m.year})</div>
+                    <div class="meta">⭐ ${m.imdb} | 🎭 ${m.genre}</div>
+                    <div class="url">${m.poster}</div>
+                    <button class="incorrect-btn" onclick="markIncorrect('${m.name}')">Rasm noto'g'ri!</button>
+                </div>
+            `;
+            grid.appendChild(item);
+        });
+
+        function markIncorrect(name) {
+            alert("Rahmat! '" + name + "' kinosining rasmi xato ekanligini belgilab oldim. Tekshiruvdan so'ng barchasini tuzatib chiqamiz.");
+        }
+    </script>
+</body>
+
+</html>
