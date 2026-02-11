@@ -1,0 +1,6 @@
+services:
+  - type: static
+    name: cinema-startup
+    env: static
+    buildCommand: ""
+    publishPath: "."
